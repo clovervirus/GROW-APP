@@ -78,6 +78,8 @@ export default function Lighting() {
   const [hours, setHours] = useState(18);
   const [stageId, setStageId] = useState("veg");
   const [co2, setCo2] = useState(false);
+  const [gridText, setGridText] = useState("");
+  const [uniformStats, setUniformStats] = useState(null);
 
   // Profiles
   const [fixtureId, setFixtureId] = useState("acib430");
@@ -143,6 +145,29 @@ export default function Lighting() {
       try { window.parent?.postMessage({ type: "lighting:ppfd", value: v }, "*"); } catch {}
     }
   }, [livePPFD]);
+
+  function calculateUniformity(){
+    const vals = (gridText || "")
+      .split(/[^0-9.]+/)
+      .filter(Boolean)
+      .map(Number)
+      .filter((v) => Number.isFinite(v) && v > 0);
+    if(!vals.length){
+      setUniformStats(null);
+      return;
+    }
+    const sum = vals.reduce((a, b) => a + b, 0);
+    const avg = sum / vals.length;
+    const min = Math.min(...vals);
+    const uniform = avg ? (min / avg) * 100 : 0;
+    setUniformStats({ count: vals.length, avg, min, uniform });
+  }
+
+  function clearUniformity(){
+    setGridText("");
+    setUniformStats(null);
+  }
+
 
   // Small render helpers
   function renderTargets(hrs) {
@@ -549,7 +574,7 @@ export default function Lighting() {
       // Helper cards
       React.createElement(
         "div",
-        { className: "grid md:grid-cols-3 gap-4" },
+        { className: "grid md:grid-cols-2 xl:grid-cols-4 gap-4" },
         React.createElement(
           "div",
           { className: "rounded-2xl shadow-sm bg-white p-4" },
@@ -567,6 +592,28 @@ export default function Lighting() {
           { className: "rounded-2xl shadow-sm bg-white p-4" },
           React.createElement("h3", { className: "font-semibold mb-2" }, `Stage Targets (for current hours: ${hours}h)`),
           renderTargets(hours)
+        ),
+        React.createElement(
+          "div",
+          { className: "rounded-2xl shadow-sm bg-white p-4" },
+          React.createElement("h3", { className: "font-semibold mb-2" }, "Uniformity Grid"),
+          React.createElement("p", { className: "text-xs text-gray-500 mb-2" }, "Paste 9–25 readings separated by space/comma/newline."),
+          React.createElement("textarea", {
+            className: "w-full h-32 rounded-xl border px-3 py-2",
+            value: gridText,
+            onChange: (e) => setGridText(e.target.value),
+            placeholder: "e.g. 680 710 695 702 690 675 660 700 705"
+          }),
+          React.createElement("div", { className: "mt-2 flex gap-2" },
+            React.createElement("button", { className: "px-3 py-1 rounded-full border bg-gray-900 text-white", onClick: calculateUniformity }, "Calculate"),
+            React.createElement("button", { className: "px-3 py-1 rounded-full border", onClick: clearUniformity }, "Clear")
+          ),
+          uniformStats && React.createElement("div", { className: "mt-3 text-sm space-y-1" },
+            React.createElement("div", null, "Samples: ", React.createElement("span", { className: "font-mono" }, uniformStats.count)),
+            React.createElement("div", null, "Avg: ", React.createElement("span", { className: "font-mono" }, uniformStats.avg.toFixed(1))),
+            React.createElement("div", null, "Min: ", React.createElement("span", { className: "font-mono" }, uniformStats.min.toFixed(1))),
+            React.createElement("div", null, "Min/Avg: ", React.createElement("span", { className: "font-mono" }, uniformStats.uniform.toFixed(1)), "%")
+          )
         ),
         React.createElement(
           "div",

@@ -4,6 +4,7 @@ import Lighting from "./features/lighting/Lighting.js";
 import Environment from "./features/environment/Environment.js";
 import HostShell from "./features/host/HostShell.js";
 import Propagation from "./features/propagation/Propagation.js";
+import Cheatsheets from "./features/Cheatsheets.js";
 
 const Pill = ({to,label}) =>
   React.createElement(NavLink, {
@@ -23,7 +24,8 @@ export default function App(){
           React.createElement(Pill, {to:"/", label:"Lighting"}),
           React.createElement(Pill, {to:"/environment", label:"Environment"}),
           React.createElement(Pill, {to:"/host", label:"Host Shell"}),
-          React.createElement(Pill, {to:"/propagation", label:"Propagation"})
+          React.createElement(Pill, {to:"/propagation", label:"Propagation"}),
+          React.createElement(Cheatsheets)
         ),
         React.createElement(Routes, null,
           React.createElement(Route, {path:"/", element: React.createElement(Lighting)}),
