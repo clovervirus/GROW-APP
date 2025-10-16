@@ -1,3 +1,5 @@
+import React from "https://esm.sh/react@18";
+
 export default function Lighting(){
   return (
     /** @jsx React.createElement */
