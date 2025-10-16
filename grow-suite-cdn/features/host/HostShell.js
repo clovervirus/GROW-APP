@@ -19,12 +19,27 @@ export default function HostShell(){
     return ()=>window.removeEventListener("message", onMsg);
   },[]);
 
-  function store(k,v){ try{ localStorage.setItem(k,v); }catch{} }
+  React.useEffect(()=>{
+    setLightingReady(false);
+    setPpfd(null);
+  },[lightingURL]);
+
+  React.useEffect(()=>{
+    setEnvReady(false);
+  },[envURL]);
+
+  function store(k,v){
+    const next = v.trim();
+    try{ localStorage.setItem(k,next); }catch{}
+    return next;
+  }
   function sendPPFDToEnv(){
-    if(!envRef.current || !ppfd) return;
+    if(!envRef.current || !ppfd || !envReady) return;
     envRef.current.contentWindow?.postMessage({type:"host:set-ppfd", value: Math.round(ppfd)}, "*");
   }
-  const bothSet = Boolean(lightingURL && envURL);
+  const lightingValue = lightingURL.trim();
+  const envValue = envURL.trim();
+  const bothSet = Boolean(lightingValue && envValue);
 
   return (
     /** @jsx React.createElement */
@@ -35,12 +50,24 @@ export default function HostShell(){
           React.createElement("div", null,
             React.createElement("label", {className:"text-sm"},"Lighting Canvas URL"),
             React.createElement("input", {className:"mt-1 w-full rounded-xl border px-3 py-2",
-              value:lightingURL, onChange:e=>{setLightingURL(e.target.value);store("lightingURL",e.target.value);}, placeholder:"https://…"})
+              value:lightingURL,
+              onChange:e=>{
+                const next = e.target.value;
+                setLightingURL(next);
+                store("lightingURL", next);
+              },
+              placeholder:"https://…"})
           ),
           React.createElement("div", null,
             React.createElement("label", {className:"text-sm"},"Environment Canvas URL"),
             React.createElement("input", {className:"mt-1 w-full rounded-xl border px-3 py-2",
-              value:envURL, onChange:e=>{setEnvURL(e.target.value);store("envURL",e.target.value);}, placeholder:"https://…"})
+              value:envURL,
+              onChange:e=>{
+                const next = e.target.value;
+                setEnvURL(next);
+                store("envURL", next);
+              },
+              placeholder:"https://…"})
           )
         ),
         React.createElement("div", {className:"flex items-center gap-2 text-sm mt-3"},
@@ -50,7 +77,7 @@ export default function HostShell(){
             React.createElement("span", {className:"font-mono"}, ppfd ?? "–")
           ),
           React.createElement("button", {className:"ml-auto px-3 py-1 rounded-full border bg-gray-900 text-white disabled:opacity-50",
-            disabled: !ppfd || !envReady, onClick: sendPPFDToEnv}, "Send PPFD → Environment")
+            disabled: !ppfd || !envReady || !lightingReady, onClick: sendPPFDToEnv}, "Send PPFD → Environment")
         )
       ),
       !bothSet && React.createElement("div", {className:"rounded-2xl bg-yellow-50 border border-yellow-200 text-yellow-900 p-4 mb-4 text-sm"},
@@ -59,15 +86,15 @@ export default function HostShell(){
       React.createElement("div", {className:"grid md:grid-cols-2 gap-4"},
         React.createElement("div", {className:"bg-white rounded-2xl shadow-sm p-2"},
           React.createElement("div", {className:"text-sm font-semibold px-2 mb-2"},"Lighting"),
-          lightingURL
-            ? React.createElement("iframe", {title:"Lighting", src:lightingURL, className:"w-full h-[70vh] rounded-xl border",
+          lightingValue
+            ? React.createElement("iframe", {title:"Lighting", src:lightingValue, className:"w-full h-[70vh] rounded-xl border",
                 sandbox:"allow-scripts allow-same-origin"})
             : React.createElement("div", {className:"h-[70vh] grid place-items-center text-sm text-gray-500"},"Paste Lighting URL above")
         ),
         React.createElement("div", {className:"bg-white rounded-2xl shadow-sm p-2"},
           React.createElement("div", {className:"text-sm font-semibold px-2 mb-2"},"Environment"),
-          envURL
-            ? React.createElement("iframe", {ref:envRef, title:"Environment", src:envURL, className:"w-full h-[70vh] rounded-xl border",
+          envValue
+            ? React.createElement("iframe", {ref:envRef, title:"Environment", src:envValue, className:"w-full h-[70vh] rounded-xl border",
                 sandbox:"allow-scripts allow-same-origin"})
             : React.createElement("div", {className:"h-[70vh] grid place-items-center text-sm text-gray-500"},"Paste Environment URL above")
         )
