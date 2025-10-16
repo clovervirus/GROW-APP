@@ -15,11 +15,17 @@ export default function HostShell(){
   const [fc, setFc] = React.useState("");
   const [ppfdConv, setPpfdConv] = React.useState("");
   const [lpu, setLpu] = React.useState(67);
+  const [autoForward, setAutoForward] = React.useState(()=>{
+    try{ return localStorage.getItem("autoForwardPPFD") === "1"; }catch{ return false; }
+  });
 
   React.useEffect(() => {
+    const ALLOWED = globalThis.ALLOWED_ORIGINS || null;
     function onMsg(e){
+      if(ALLOWED && !ALLOWED.includes(e.origin)) return;
       const m = e?.data;
       if(!m || typeof m !== "object") return;
+      try { console.debug("[Host] message", m); } catch {}
       if(m.type === "lighting:ready") setLightingReady(true);
       if(m.type === "environment:ready") setEnvReady(true);
       if(m.type === "lighting:ppfd" && Number.isFinite(m.value)) setPpfd(Number(m.value));
@@ -28,20 +34,32 @@ export default function HostShell(){
     return () => window.removeEventListener("message", onMsg);
   }, []);
 
-  React.useEffect(() => {
-    setLightingReady(false);
-    setPpfd(null);
-  }, [lightingURL]);
-
-  React.useEffect(() => {
-    setEnvReady(false);
-  }, [envURL]);
-
   function store(key, value){
     const next = value.trim();
     try { localStorage.setItem(key, next); } catch {}
     return next;
   }
+
+  React.useEffect(()=>{
+    try{
+      const params = new URLSearchParams(globalThis.location?.search || "");
+      const l = params.get("lighting");
+      const en = params.get("env");
+      if(l){ setLightingURL(store("lightingURL", l)); }
+      if(en){ setEnvURL(store("envURL", en)); }
+    }catch{}
+  },[]);
+
+  React.useEffect(() => {
+    setLightingReady(false);
+    setPpfd(null);
+    try { console.debug("[Host] lightingURL=", lightingURL); } catch {}
+  }, [lightingURL]);
+
+  React.useEffect(() => {
+    setEnvReady(false);
+    try { console.debug("[Host] envURL=", envURL); } catch {}
+  }, [envURL]);
 
   function syncQuery(){
     try {
@@ -64,8 +82,12 @@ export default function HostShell(){
   }
 
   React.useEffect(() => {
-    if(envReady && ppfd) sendPPFDToEnv();
-  }, [ppfd, envReady]);
+    if(autoForward && envReady && ppfd) sendPPFDToEnv();
+  }, [ppfd, envReady, autoForward]);
+
+  React.useEffect(()=>{
+    try{ localStorage.setItem("autoForwardPPFD", autoForward ? "1" : "0"); }catch{}
+  }, [autoForward]);
 
   function notify(msg){
     setToast(msg);
@@ -192,6 +214,14 @@ export default function HostShell(){
             disabled: !ppfd || !envReady || !lightingReady,
             onClick: () => { sendPPFDToEnv(); notify("PPFD sent"); }
           }, "Send PPFD → Environment"),
+          React.createElement("label", {className:"flex items-center gap-2 text-xs ml-2"},
+            React.createElement("input", {
+              type:"checkbox",
+              checked:autoForward,
+              onChange:e=>setAutoForward(e.target.checked)
+            }),
+            "Auto-forward"
+          ),
           React.createElement("button", {className:"px-3 py-1 rounded-full border ml-2", onClick: () => { setLightingURL(""); store("lightingURL", ""); syncQuery(); }}, "Clear Lighting"),
           React.createElement("button", {className:"px-3 py-1 rounded-full border", onClick: () => { setEnvURL(""); store("envURL", ""); syncQuery(); }}, "Clear Environment"),
           React.createElement("button", {className:"px-3 py-1 rounded-full border ml-2", onClick: exportState}, "Export state"),
