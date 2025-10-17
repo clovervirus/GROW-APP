@@ -64,3 +64,9 @@ fatal: unable to access 'https://github.com/clovervirus/GROW-APP.git/': CONNECT 
 
 ## pages-cdn.yml exists on main ✅
 ```
+## Session Log — 2025-10-17
+- Verified `main` fast-forwards to `work`; recreated feature branches from `main`.
+- Added `origin` remote and attempted to push `main` and feature branches — blocked by `CONNECT tunnel failed, response 403`.
+- Generated offline bundle: `artifacts/grow-app-20251017-042839.bundle`.
+- Confirmed `.github/workflows/pages-cdn.yml` exists on `main` for GitHub Pages deployment.
+- Updated Host Shell UI with an Auto-send PPFD toggle and persistence.
