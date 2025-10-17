@@ -27,6 +27,22 @@ The following local branches are ready to publish once GitHub access is availabl
 Use the bundle script described below to move these branches to a machine with outbound network
 access, then push them to the GitHub repository (`clovervirus/GROW-APP`).
 
+## Snapshot the Current State
+
+Run the helper script at any time to capture the current connectivity snapshot. The output mirrors
+the validation block used in the handoff instructions and is safe to re-run when documenting
+progress:
+
+```bash
+./scripts/snapshot.sh
+```
+
+The script reports the configured remotes, each local branch (annotated with its latest commit
+subject), remote heads visible from `origin`, and whether `main` currently contains the Pages
+workflow. When `origin` cannot be reached (for example, because of the `CONNECT 403` proxy block),
+the script surfaces the error in place of the remote heads so the output can still be pasted into
+the validation log.
+
 ## Exporting the Repository (Path A)
 
 ```bash
