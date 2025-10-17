@@ -10,14 +10,19 @@ export default function HostShell(){
   const [lightingReady, setLightingReady] = React.useState(false);
   const [envReady, setEnvReady] = React.useState(false);
   const [ppfd, setPpfd] = React.useState(null);
+  const [autoSend, setAutoSend] = React.useState(() => {
+    try {
+      const saved = localStorage.getItem("autoSendPPFD");
+      if(saved === "0") return false;
+      if(saved === "1") return true;
+    } catch {}
+    return true;
+  });
   const [toast, setToast] = React.useState("");
   const [lux, setLux] = React.useState("");
   const [fc, setFc] = React.useState("");
   const [ppfdConv, setPpfdConv] = React.useState("");
   const [lpu, setLpu] = React.useState(67);
-  const [autoForward, setAutoForward] = React.useState(()=>{
-    try{ return localStorage.getItem("autoForwardPPFD") === "1"; }catch{ return false; }
-  });
 
   React.useEffect(() => {
     const ALLOWED = globalThis.ALLOWED_ORIGINS || null;
@@ -77,17 +82,17 @@ export default function HostShell(){
   React.useEffect(syncQuery, [lightingURL, envURL]);
 
   function sendPPFDToEnv(){
-    if(!envRef.current || !ppfd || !envReady) return;
+    if(!envRef.current || !envReady || !Number.isFinite(ppfd)) return;
     envRef.current.contentWindow?.postMessage({ type: "host:set-ppfd", value: Math.round(ppfd) }, "*");
   }
 
   React.useEffect(() => {
-    if(autoForward && envReady && ppfd) sendPPFDToEnv();
-  }, [ppfd, envReady, autoForward]);
+    if(autoSend && envReady && Number.isFinite(ppfd)) sendPPFDToEnv();
+  }, [autoSend, envReady, ppfd]);
 
   React.useEffect(()=>{
-    try{ localStorage.setItem("autoForwardPPFD", autoForward ? "1" : "0"); }catch{}
-  }, [autoForward]);
+    try{ localStorage.setItem("autoSendPPFD", autoSend ? "1" : "0"); }catch{}
+  }, [autoSend]);
 
   function notify(msg){
     setToast(msg);
@@ -209,19 +214,19 @@ export default function HostShell(){
           React.createElement("span", {className:"px-3 py-1 rounded-full bg-gray-100 border"}, "PPFD: ",
             React.createElement("span", {className:"font-mono"}, ppfd ?? "–")
           ),
-          React.createElement("button", {
-            className:"ml-auto px-3 py-1 rounded-full border bg-gray-900 text-white disabled:opacity-50",
-            disabled: !ppfd || !envReady || !lightingReady,
-            onClick: () => { sendPPFDToEnv(); notify("PPFD sent"); }
-          }, "Send PPFD → Environment"),
-          React.createElement("label", {className:"flex items-center gap-2 text-xs ml-2"},
+          React.createElement("label", {className:"ml-auto flex items-center gap-2 text-sm"},
             React.createElement("input", {
               type:"checkbox",
-              checked:autoForward,
-              onChange:e=>setAutoForward(e.target.checked)
+              checked:autoSend,
+              onChange:e=>setAutoSend(e.target.checked)
             }),
-            "Auto-forward"
+            "Auto-send"
           ),
+          React.createElement("button", {
+            className:"px-3 py-1 rounded-full border bg-gray-900 text-white disabled:opacity-50",
+            disabled: !Number.isFinite(ppfd) || !envReady || !lightingReady,
+            onClick: () => { sendPPFDToEnv(); notify("PPFD sent"); }
+          }, "Send PPFD → Environment"),
           React.createElement("button", {className:"px-3 py-1 rounded-full border ml-2", onClick: () => { setLightingURL(""); store("lightingURL", ""); syncQuery(); }}, "Clear Lighting"),
           React.createElement("button", {className:"px-3 py-1 rounded-full border", onClick: () => { setEnvURL(""); store("envURL", ""); syncQuery(); }}, "Clear Environment"),
           React.createElement("button", {className:"px-3 py-1 rounded-full border ml-2", onClick: exportState}, "Export state"),
