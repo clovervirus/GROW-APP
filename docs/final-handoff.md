@@ -3,6 +3,20 @@
 This document captures the steps required to publish the Grow Suite repositories from this
 network-restricted environment.
 
+## 0. Snapshot — confirm current state (safe to re-run)
+
+To capture the repository status before exporting, run:
+
+```bash
+./scripts/snapshot.sh
+```
+
+The script prints the configured remotes, local branches (annotated with their latest commit
+subjects), remote heads, and checks whether the `pages-cdn.yml` workflow is tracked on `main`. If the
+environment cannot reach `origin`, the script captures the error message instead of exiting so you
+can still paste the full snapshot into the handoff log. The same commands can be copy/pasted
+manually when a script runner is not available.
+
 ## 1. Export every branch as a bundle (Path A)
 
 Run the helper script to generate a portable bundle:

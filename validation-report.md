@@ -9,6 +9,7 @@
 - `.github/workflows/pages-cdn.yml` and `.github/workflows/pages-vite.yml` live on `main` and are
   ready to run once commits reach GitHub.
 - Draft PR creation and Pages smoke tests are blocked until the repository can push to GitHub.
+- Run `./scripts/snapshot.sh` to regenerate this status snapshot at any time.
 
 ## Recommended Actions
 1. **Preferred:** run `./scripts/create-bundle.sh` to export every branch into `artifacts/*.bundle`.
@@ -27,6 +28,42 @@
 - Re-run the validation snippet to confirm remote branches, then update this report with the final
   deployment status.
 
+## Snapshot (2025-10-17 16:21 PT)
+```
+## REMOTE
+origin  https://github.com/clovervirus/GROW-APP.git (fetch)
+origin  https://github.com/clovervirus/GROW-APP.git (push)
+
+## LOCAL BRANCHES
+  feature/environment chore: log snapshot and handle offline remotes
+  feature/host-shell chore: log snapshot and handle offline remotes
+  feature/lighting chore: log snapshot and handle offline remotes
+* main chore: log snapshot and handle offline remotes
+  work chore: log snapshot and handle offline remotes
+
+## REMOTE HEADS (origin)
+(error querying origin)
+fatal: unable to access 'https://github.com/clovervirus/GROW-APP.git/': CONNECT tunnel failed, response 403
+
+## pages-cdn.yml exists on main ✅
+```
+
+## Snapshot (2025-10-17 16:49 PT)
+```
+## REMOTE
+
+## LOCAL BRANCHES
+  feature/environment Improve snapshot logging for restricted environments
+  feature/host-shell Improve snapshot logging for restricted environments
+  feature/lighting Improve snapshot logging for restricted environments
+* main Improve snapshot logging for restricted environments
+  work Improve snapshot logging for restricted environments
+
+## REMOTE HEADS (origin)
+(origin not set)
+
+## pages-cdn.yml exists on main ✅
+```
 ## Session Log — 2025-10-17
 - Verified `main` fast-forwards to `work`; recreated feature branches from `main`.
 - Added `origin` remote and attempted to push `main` and feature branches — blocked by `CONNECT tunnel failed, response 403`.
