@@ -11,6 +11,7 @@ workspace when direct pushes to GitHub are blocked.
 | --- | --- |
 | `grow-suite-cdn/` | Static CDN bundle that serves the Host Shell and tabs UI. |
 | `grow-suite/` | Source reference for the Canvas calculators that the Host Shell loads. |
+| `docs/codex-ticket-vs-codespaces.md` | Decision guide for exporting via Codex Ticket versus moving into GitHub Codespaces. |
 | `docs/final-handoff.md` | Checklist for exporting the repo, enabling GitHub Pages, and creating the draft PR. |
 | `scripts/create-bundle.sh` | Helper for producing a portable `.bundle` file with every branch and tag. |
 | `validation-report.md` | Latest status of remote connectivity and outstanding deployment steps. |
