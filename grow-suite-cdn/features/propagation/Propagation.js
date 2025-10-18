@@ -7,9 +7,15 @@ export default function Propagation(){
   const [vegDays, setVegDays] = React.useState(28);
   const [rate, setRate] = React.useState(10);
 
-  const delivery = React.useMemo(()=> new Date(deadline), [deadline]);
+  const delivery = React.useMemo(() => {
+    const parsed = new Date(deadline);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }, [deadline]);
   const lead = strikeDays + vegDays;
-  const cutDate = React.useMemo(()=> new Date(delivery.getTime() - lead * 864e5), [delivery, lead]);
+  const cutDate = React.useMemo(() => {
+    if (!delivery) return null;
+    return new Date(delivery.getTime() - lead * 864e5);
+  }, [delivery, lead]);
   const mothersNeeded = React.useMemo(()=> Math.ceil(target / (rate * Math.max(1, Math.ceil(lead/7)))), [target, rate, lead]);
 
   return (
@@ -29,7 +35,7 @@ export default function Propagation(){
         React.createElement("input", {type:"number", className:"w-24 border rounded-xl px-2 py-1", value:rate, onChange:e=>setRate(Number(e.target.value))})
       ),
       React.createElement("div", {className:"rounded-xl bg-gray-50 p-3 space-y-1"},
-        React.createElement("div", null, `Cut date ≈ ${cutDate.toISOString().slice(0,10)}`),
+        React.createElement("div", null, cutDate ? `Cut date ≈ ${cutDate.toISOString().slice(0,10)}` : "Enter a valid delivery date to calculate cut timing."),
         React.createElement("div", null, `Lead time: ${lead} days`),
         React.createElement("div", null, `Mothers needed ≈ ${mothersNeeded}`)
       )
