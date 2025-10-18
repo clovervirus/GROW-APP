@@ -22,7 +22,7 @@ export default function GrowSuiteHost() {
   }, []);
 
   function sendPPFDToEnv() {
-    if (!envRef.current || !ppfd) return;
+    if (!envRef.current || ppfd == null || !Number.isFinite(ppfd)) return;
     envRef.current.contentWindow?.postMessage({ type: "host:set-ppfd", value: Math.round(ppfd) }, "*");
   }
   const store = (k: string, v: string) => {
@@ -74,7 +74,7 @@ export default function GrowSuiteHost() {
           </span>
           <button
             className="ml-auto px-3 py-1 rounded-full border bg-gray-900 text-white disabled:opacity-50"
-            disabled={!ppfd || !envReady}
+            disabled={ppfd == null || !Number.isFinite(ppfd) || !envReady}
             onClick={sendPPFDToEnv}
           >
             Send PPFD → Environment
